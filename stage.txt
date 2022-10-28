@@ -1,0 +1,86 @@
+
+
+CREATE DATABASE TutorialDB;
+
+
+USE WAREHOUSE TUTORIAL;
+
+
+USE DATABASE TUTORIALDB;
+
+
+USE SCHEMA PUBLIC;
+
+
+CREATE OR REPLACE TABLE EMP(EMP_ID VARCHAR(20), EMP_NAME VARCHAR(40), EMP_MAIL_ID VARCHAR(30));
+
+
+DESC TABLE EMP;
+
+
+CREATE OR REPLACE FILE FORMAT EMPLOYEE_FILE_FORMAT
+                          type = csv
+                          field_delimiter = ','
+                          skip_header = 1
+                          null_if = ('NULL', 'null', '')
+                          empty_field_as_null = true;
+
+
+#put a file to table stage 'EMP'
+PUT file:///C:/Users/imranmshaik/Downloads/employee.csv @%EMP;
+
+
+LIST @%EMP;
+
+
+SELECT * FROM @%EMP/employee.csv.gz;
+
+
+#copy employee.csv file to EMP table from EMP table stage
+COPY INTO EMP
+        FROM @%EMP
+        file_format = EMPLOYEE_FILE_FORMAT
+        pattern = '.*employee.*'
+        on_error = 'continue';
+
+
+
+#put a file to user stage
+PUT file:///C:/Users/imranmshaik/Downloads/employee.csv @~;
+
+
+#copy employee.csv file to EMP table from user stage
+COPY INTO EMP
+          FROM @~
+          file_format = EMPLOYEE_FILE_FORMAT
+          pattern = '.*employee.*'
+          on_error = 'continue';
+
+
+#put a file to user stage folder
+PUT file:///C:/Users/imranmshaik/Downloads/employee.csv @~/EmployeeData;
+
+
+#copy employee.csv file to EMP table from folder in user stage
+COPY INTO EMP
+          FROM @~/EmployeeData
+          file_format = EMPLOYEE_FILE_FORMAT
+          pattern = '.*employee.*'
+          on_error = 'continue';
+
+
+#create named internal stage
+CREATE STAGE EmployeeData;
+
+
+#copy employee.csv file to EMP table from named internal stage
+COPY INTO EMP
+          FROM @EmployeeData
+          file_format = EMPLOYEE_FILE_FORMAT
+          pattern = '.*employee.*'
+          on_error = 'continue';
+
+
+#Get all the data loaded to EMP table
+SELECT * FROM EMP;
+
