@@ -1,0 +1,9 @@
+
+
+CREATE STAGE UNLOAD_EMP;
+
+
+COPY INTO @UNLOAD_EMP/UNLOAD FROM EMP;
+
+
+GET @UNLOAD_EMP/UNLOAD file://C:\Users\imranmshaik\Downloads;
