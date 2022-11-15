@@ -36,7 +36,7 @@ LIST @%EMP;
 SELECT * FROM @%EMP/employee.csv.gz;
 
 
-#copy employee.csv file to EMP table from EMP table stage
+#copy employee files to EMP table from EMP table stage
 COPY INTO EMP
         FROM @%EMP
         file_format = EMPLOYEE_FILE_FORMAT
@@ -49,7 +49,7 @@ COPY INTO EMP
 PUT file:///C:/Users/imranmshaik/Downloads/employee.csv @~;
 
 
-#copy employee.csv file to EMP table from user stage
+#copy employee files to EMP table from user stage
 COPY INTO EMP
           FROM @~
           file_format = EMPLOYEE_FILE_FORMAT
@@ -61,7 +61,7 @@ COPY INTO EMP
 PUT file:///C:/Users/imranmshaik/Downloads/employee.csv @~/EmployeeData;
 
 
-#copy employee.csv file to EMP table from folder in user stage
+#copy employee files to EMP table from folder in user stage
 COPY INTO EMP
           FROM @~/EmployeeData
           file_format = EMPLOYEE_FILE_FORMAT
@@ -73,7 +73,7 @@ COPY INTO EMP
 CREATE STAGE EmployeeData;
 
 
-#copy employee.csv file to EMP table from named internal stage
+#copy employee files to EMP table from named internal stage
 COPY INTO EMP
           FROM @EmployeeData
           file_format = EMPLOYEE_FILE_FORMAT
@@ -81,6 +81,18 @@ COPY INTO EMP
           on_error = 'continue';
 
 
+#create named external stage
+CREATE OR REPLACE STAGE EMPLOYEE_DATA_FROM_S3
+  URL = 's3://data/employee/'
+  FILE_FORMAT = EMPLOYEE_FILE_FORMAT;
+
+
+#copy employee files to EMP table from named internal stage
+COPY INTO EMP
+          FROM @EMPLOYEE_DATA_FROM_S3
+          pattern = '.*employee.*'
+          on_error = 'continue';
+
+
 #Get all the data loaded to EMP table
 SELECT * FROM EMP;
-

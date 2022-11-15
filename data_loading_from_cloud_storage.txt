@@ -1,0 +1,43 @@
+
+
+CREATE DATABASE TutorialDB;
+
+
+USE WAREHOUSE TUTORIAL;
+
+
+USE DATABASE TUTORIALDB;
+
+
+USE SCHEMA PUBLIC;
+
+
+CREATE OR REPLACE TABLE EMP(EMP_ID VARCHAR(20), EMP_NAME VARCHAR(40), EMP_MAIL_ID VARCHAR(30));
+
+
+DESC TABLE EMP;
+
+
+CREATE OR REPLACE FILE FORMAT EMPLOYEE_FILE_FORMAT
+                          type = csv
+                          field_delimiter = ','
+                          skip_header = 1
+                          null_if = ('NULL', 'null', '')
+                          empty_field_as_null = true;
+
+
+#create named external stage
+CREATE OR REPLACE STAGE EMPLOYEE_DATA_FROM_S3
+  URL = 's3://data/employee/'
+  FILE_FORMAT = EMPLOYEE_FILE_FORMAT;
+
+
+#copy employee files to EMP table from named external stage
+COPY INTO EMP
+  FROM @EMPLOYEE_DATA_FROM_S3
+  pattern = '.*employee.*'
+  on_error = 'skip_file';
+
+
+#Get all the data loaded to EMP table
+SELECT * FROM EMP;
